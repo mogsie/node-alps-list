@@ -1,0 +1,66 @@
+This node.js program is an intermediary which can retrieve a list of microblogging
+messages from an ALPS compliant messaging service, and show them in a single list.
+
+It more or less mimics the "twitter lists" function, but in the decentralized
+twitterverse of the web, where nobody is in control.  Anyone can set up such a
+list, and it'll be available to anyone who has access to the URI.
+
+This is an intermediary which requires a whole lot of node.js stuff to be installed. :-)
+
+It was developed using
+- node 0.4.4
+- jsdom 0.2.0
+- journey 0.4.0-pre-2
+- node-static 0.5.3
+- cradle 0.5.5
+- jquery 1.5.1
+
+And a plain install of couchdb, with an empty database:
+
+echo '' | GET -m PUT http://localhost:5984/proxy/
+
+Populate a configuration for a "list".  Each URI should be the host name
+and path of an ALPS compliant (X)HTML page which contains a message list.
+
+echo '
+  { "title" : "Mogsie and KevBurnsJr microblog combo"
+   ,"urls":
+    [
+      {"host":"redacted",
+       "port":8080
+       "path":"/microblog/user-messages/mogsie"},
+      {"host":"redacted-too.server.com",
+       "path":"/myserver/mamund/messages.html"},
+      {"host":"you-get-the-picture",
+       "path":"/microblog/user-messages/lee"}
+    ]
+  }' | GET -m PUT http://localhost:5984/proxy/mylist
+
+Now you can start the daemon itself:
+
+node intermediary.js
+
+and go to http://localhost:9876/proxy/mylist/  (note trailing slash) to see
+the list
+
+Notes: it sorts the messages by the date-time, which isn't machine readable,
+and doesn't sort well anyway. YMMV.
+
+It doesn't absolutize the URIs, so if your origin servers have relative
+URIs things will break.
+
+The markup was shamelessly stolen from the original implementation by mamund.
+
+This whole thing is just an experiment, so please don't use this for anything
+but if you do, you must send me a chocolate cake.
+
+Future direction could include
+- use the ALPS to handle signing up to the service
+- caching the responses from the underlying origin servers and putting them
+  (or at least the tweets) in the couchdb instance
+- support for understanding profile pages, and navigate to the "list of
+  messages" page
+- support for tweeting by linking directly to a real server (no need to
+  proxy the requests when the other server can do the work all alone.
+
+
